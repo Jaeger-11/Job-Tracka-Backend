@@ -22,9 +22,9 @@ app.use(helmet());
 app.use(cors());
 app.use(xss());
 
-// app.get("/", (req,res) => {
-//     res.send("PRODUCTION IN PROGRESS")
-// })
+app.get("/", (req,res) => {
+    res.send("JOB TRACKA BACKEND APPLICATION")
+})
 
 app.use("/api/v1/application",authentication, applicationRouter);
 app.use("/api/v1/auth", authenticationRouter); 
