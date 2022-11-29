@@ -64,6 +64,41 @@ const showStatistics = async (req,res) => {
         return acc; 
     }, {} )
 
+    let monthlyApplications = await Application.aggregate([
+        { $match: { createdBy: mongoose.Types.ObjectId(req.user.userId) } },
+        { $group: {
+             _id: { year: { $year : '$createdAt' }, month: { $month: '$createdAt' } },
+            count: {$sum: 1},
+        } },
+        { $sort: { '_id.year': -1, '_id.month': -1 } },
+        { $limit: 6 },
+    ])
+
+    monthlyApplications = monthlyApplications
+    .map((item) => {
+        const {
+            _id: { year, month },
+            count,
+        } = item;
+        const months = {
+            1:"Jan",
+            2:"Feb",
+            3:"Mar",
+            4:"Apr",
+            5:"May",
+            6:"Jun",
+            7:"Jul",
+            8:"Aug",
+            9:"Sep",
+            10:"Oct",
+            11:"Nov",
+            12:"Dec",
+        }
+        const date = `${months[month]}-${year}`
+        return { date, count };
+    })
+    .reverse();
+
     const totalApplications = await Application.countDocuments({createdBy: req.user.userId });
 
     defaultStats = {
@@ -73,6 +108,7 @@ const showStatistics = async (req,res) => {
         interview : stats.interview || 0,
         declined : stats.declined || 0,
         rejected : stats.rejected || 0,
+        monthlyApplications
     }
 
     res.status(200).json(defaultStats)
